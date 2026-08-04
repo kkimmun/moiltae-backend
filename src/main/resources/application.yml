@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: moiltae
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+    include:
+      - private
+      - aws
+      - mail
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: Asia/Seoul
+  jackson:
+    time-zone: Asia/Seoul
+  web:
+    resources:
+      static-locations: file:uploads/
+  mvc:
+    static-path-pattern: /uploads/**
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+server:
+  port: ${SERVER_PORT:8889}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+          - prometheus
+  metrics:
+    tags:
+      application: back
+
+jwt:
+  secret: ${JWT_SECRET:bW9pbHRhZS1sb2NhbC1kZXZlbG9wbWVudC1zZWNyZXQta2V5LTIwMjY=}
+  expiration-seconds: ${JWT_EXPIRATION_SECONDS:43200}
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
+room:
+  close-interval-ms: ${ROOM_CLOSE_INTERVAL_MS:60000}

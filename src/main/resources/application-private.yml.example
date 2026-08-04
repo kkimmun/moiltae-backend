@@ -1,0 +1,8 @@
+spring:
+  config:
+    activate:
+      on-profile: private
+
+# 실제 비밀값은 application-private.yml 또는 환경변수에 작성합니다.
+jwt:
+  secret: ${JWT_SECRET:replace-with-a-base64-encoded-secret-of-at-least-32-bytes}

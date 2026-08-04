@@ -1,0 +1,24 @@
+# 빌드 및 IDE
+.gradle/
+build/
+bin/
+.idea/
+*.iml
+*.log
+
+# 로컬 데이터
+data/
+uploads/
+
+# 환경변수
+.env
+.env.*
+!.env.example
+
+# 비밀 설정
+src/main/resources/application-private.yml
+src/main/resources/application-aws.yml
+
+# 예시 파일은 GitHub에 포함
+!src/main/resources/application-private.yml.example
+!src/main/resources/application-aws.yml.example

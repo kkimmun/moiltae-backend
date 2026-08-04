@@ -1,0 +1,9 @@
+spring:
+  config:
+    activate:
+      on-profile: aws
+
+# AWS 기능을 연결할 때 실제 값은 application-aws.yml 또는 환경변수에 작성합니다.
+aws:
+  region: ${AWS_REGION:ap-northeast-2}
+
