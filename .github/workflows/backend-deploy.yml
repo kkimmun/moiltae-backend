@@ -54,13 +54,11 @@ jobs:
           HOST: ${{ secrets.HOST }}
           USERNAME: ${{ secrets.USERNAME }}
           SSH_KEY: ${{ secrets.SSH_KEY }}
-          SSH_FINGERPRINT: ${{ secrets.SSH_FINGERPRINT }}
         run: |
           set -euo pipefail
           test -n "$HOST"
           test -n "$USERNAME"
           test -n "$SSH_KEY"
-          test -n "$SSH_FINGERPRINT"
 
       - name: Upload backend JAR to EC2 staging directory
         if: github.event_name != 'pull_request'
@@ -70,7 +68,6 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: 22
-          fingerprint: ${{ secrets.SSH_FINGERPRINT }}
           source: deploy-package/moiltae-backend-0.0.1-SNAPSHOT.jar
           target: /home/ubuntu/app/.deploy/backend-${{ github.sha }}
           strip_components: 1
@@ -86,7 +83,6 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: 22
-          fingerprint: ${{ secrets.SSH_FINGERPRINT }}
           envs: DEPLOY_SHA
           command_timeout: 20m
           script: |
