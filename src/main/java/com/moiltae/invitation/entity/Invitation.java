@@ -24,9 +24,9 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @Table(
-        name = "invitations",
+        name = "moiltae_invitations",
         uniqueConstraints = @UniqueConstraint(
-                name = "uk_invitations_room_invitee",
+                name = "uk_mt_invite_room_member",
                 columnNames = {"room_id", "invitee_id"}
         )
 )
@@ -82,4 +82,3 @@ public class Invitation {
         this.respondedAt = respondedAt;
     }
 }
-

@@ -1,0 +1,166 @@
+name: Build and Deploy Backend
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: moiltae-backend-production
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Build and test
+        shell: bash
+        run: |
+          chmod +x gradlew
+          ./gradlew clean build --no-daemon
+
+      - name: Prepare deployment JAR
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p deploy-package
+          jar_file="$(find build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*-plain.jar' | sort | head -n 1)"
+          test -n "$jar_file"
+          cp "$jar_file" deploy-package/moiltae-backend-0.0.1-SNAPSHOT.jar
+          test -s deploy-package/moiltae-backend-0.0.1-SNAPSHOT.jar
+
+      - name: Validate deployment secrets
+        if: github.event_name != 'pull_request'
+        shell: bash
+        env:
+          HOST: ${{ secrets.HOST }}
+          USERNAME: ${{ secrets.USERNAME }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_FINGERPRINT: ${{ secrets.SSH_FINGERPRINT }}
+        run: |
+          set -euo pipefail
+          test -n "$HOST"
+          test -n "$USERNAME"
+          test -n "$SSH_KEY"
+          test -n "$SSH_FINGERPRINT"
+
+      - name: Upload backend JAR to EC2 staging directory
+        if: github.event_name != 'pull_request'
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          fingerprint: ${{ secrets.SSH_FINGERPRINT }}
+          source: deploy-package/moiltae-backend-0.0.1-SNAPSHOT.jar
+          target: /home/ubuntu/app/.deploy/backend-${{ github.sha }}
+          strip_components: 1
+          overwrite: true
+
+      - name: Activate backend and verify health
+        if: github.event_name != 'pull_request'
+        uses: appleboy/ssh-action@v1.2.5
+        env:
+          DEPLOY_SHA: ${{ github.sha }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          fingerprint: ${{ secrets.SSH_FINGERPRINT }}
+          envs: DEPLOY_SHA
+          command_timeout: 20m
+          script: |
+            set -eu
+
+            APP_DIR=/home/ubuntu/app
+            DEPLOY_DIR="$APP_DIR/.deploy"
+            STAGE_DIR="$DEPLOY_DIR/backend-$DEPLOY_SHA"
+            JAR_NAME=moiltae-backend-0.0.1-SNAPSHOT.jar
+            STAGED_JAR="$STAGE_DIR/$JAR_NAME"
+            TARGET_JAR="$APP_DIR/$JAR_NAME"
+            BACKUP_JAR="$DEPLOY_DIR/$JAR_NAME.backup-$DEPLOY_SHA"
+            HAD_PREVIOUS=0
+
+            mkdir -p "$DEPLOY_DIR"
+            exec 9>"$DEPLOY_DIR/deploy.lock"
+            flock -w 300 9
+
+            test -s "$STAGED_JAR"
+            test -f "$APP_DIR/docker-compose.yml"
+            test -f "$APP_DIR/.env"
+            test -f "$APP_DIR/application-deploy.yml"
+
+            cd "$APP_DIR"
+            docker compose config --quiet
+
+            if [ -f "$TARGET_JAR" ]; then
+              cp -p "$TARGET_JAR" "$BACKUP_JAR"
+              HAD_PREVIOUS=1
+            fi
+
+            mv "$STAGED_JAR" "$TARGET_JAR"
+
+            rollback() {
+              echo "Backend deployment failed. Restoring the previous JAR."
+              if [ "$HAD_PREVIOUS" -eq 1 ] && [ -f "$BACKUP_JAR" ]; then
+                mv "$BACKUP_JAR" "$TARGET_JAR"
+                docker compose up -d --no-deps --force-recreate api || true
+                docker compose restart web || true
+              else
+                rm -f "$TARGET_JAR"
+                docker compose stop api || true
+              fi
+            }
+
+            if ! docker compose up -d --no-deps --force-recreate api; then
+              rollback
+              exit 1
+            fi
+
+            if ! docker compose restart web; then
+              rollback
+              exit 1
+            fi
+
+            healthy=0
+            attempt=1
+            while [ "$attempt" -le 30 ]; do
+              if curl --fail --silent --show-error \
+                --resolve kh-evre.shop:443:127.0.0.1 \
+                https://kh-evre.shop/actuator/health \
+                | grep -q '"status":"UP"'; then
+                healthy=1
+                break
+              fi
+              sleep 2
+              attempt=$((attempt + 1))
+            done
+
+            if [ "$healthy" -ne 1 ]; then
+              rollback
+              exit 1
+            fi
+
+            rm -f "$BACKUP_JAR"
+            rm -rf "$STAGE_DIR"
+            docker compose ps api web

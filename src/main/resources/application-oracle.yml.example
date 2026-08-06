@@ -1,0 +1,11 @@
+spring:
+  config:
+    activate:
+      on-profile: oracle
+  datasource:
+    url: jdbc:oracle:thin:@host:port:SID
+    username: your-oracle-username
+    password: your-oracle-password
+    driver-class-name: oracle.jdbc.OracleDriver
+  jpa:
+    database-platform: org.hibernate.dialect.OracleDialect

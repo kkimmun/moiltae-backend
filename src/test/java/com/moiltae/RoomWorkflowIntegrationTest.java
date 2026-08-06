@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.moiltae.auth.dto.AuthDto;
 import com.moiltae.auth.email.sender.VerificationMailSender;
@@ -76,6 +77,38 @@ class RoomWorkflowIntegrationTest {
 
     @Autowired
     private CapturingVerificationMailSender verificationMailSender;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Test
+    void schemaUsesOnlyMoiltaePrefixedTableNames() {
+        List<String> tableNames = jdbcTemplate.queryForList(
+                """
+                select table_name
+                  from information_schema.tables
+                 where table_schema = 'PUBLIC'
+                """,
+                String.class
+        );
+
+        assertThat(tableNames).contains(
+                "MOILTAE_MEMBERS",
+                "MOILTAE_EMAIL_VERIFICATIONS",
+                "MOILTAE_ROOMS",
+                "MOILTAE_ROOM_MEMBERS",
+                "MOILTAE_INVITATIONS",
+                "MOILTAE_AVAILABILITIES"
+        );
+        assertThat(tableNames).doesNotContain(
+                "MEMBERS",
+                "EMAIL_VERIFICATIONS",
+                "ROOMS",
+                "ROOM_MEMBERS",
+                "INVITATIONS",
+                "AVAILABILITIES"
+        );
+    }
 
     @Test
     void invitationOnlyRoomWorkflowCalculatesDisconnectedMaximumOverlapRanges() {

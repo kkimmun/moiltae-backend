@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "rooms")
+@Table(name = "moiltae_rooms")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Room {
     @Id
@@ -88,4 +88,3 @@ public class Room {
         return new Room(owner, title, startDate, endDate, closesAt, createdAt);
     }
 }
-

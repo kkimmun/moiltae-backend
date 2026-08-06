@@ -16,10 +16,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @Table(
-        name = "email_verifications",
+        name = "moiltae_email_verifications",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_email_verifications_email", columnNames = "email"),
-                @UniqueConstraint(name = "uk_email_verifications_token", columnNames = "verification_token")
+                @UniqueConstraint(name = "uk_mt_email_verify_email", columnNames = "email"),
+                @UniqueConstraint(name = "uk_mt_email_verify_token", columnNames = "verification_token")
         }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

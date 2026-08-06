@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "room_members")
+@Table(name = "moiltae_room_members")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RoomMember {
     @EmbeddedId
@@ -48,4 +48,3 @@ public class RoomMember {
         return new RoomMember(room, member, joinedAt);
     }
 }
-

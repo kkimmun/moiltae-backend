@@ -22,9 +22,9 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @Table(
-        name = "availabilities",
+        name = "moiltae_availabilities",
         uniqueConstraints = @UniqueConstraint(
-                name = "uk_availabilities_room_member_time",
+                name = "uk_mt_avail_member_time",
                 columnNames = {"room_id", "member_id", "available_at"}
         )
 )

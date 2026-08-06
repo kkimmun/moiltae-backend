@@ -14,10 +14,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @Table(
-        name = "members",
+        name = "moiltae_members",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_members_login_id", columnNames = "login_id"),
-                @UniqueConstraint(name = "uk_members_email", columnNames = "email")
+                @UniqueConstraint(name = "uk_mt_member_login", columnNames = "login_id"),
+                @UniqueConstraint(name = "uk_mt_member_email", columnNames = "email")
         }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

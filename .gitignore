@@ -1,24 +1,67 @@
-# 빌드 및 IDE
+# Gradle and build output
 .gradle/
 build/
 bin/
-.idea/
-*.iml
-*.log
+out/
 
-# 로컬 데이터
+# IDE
+.idea/
+.settings/
+.classpath
+.project
+*.iml
+.vscode/
+
+# Logs and runtime data
+*.log
+logs/
 data/
 uploads/
 
-# 환경변수
+# Environment variables
 .env
 .env.*
 !.env.example
+!.env.*.example
 
-# 비밀 설정
+# Spring configuration containing private values
 src/main/resources/application-private.yml
 src/main/resources/application-aws.yml
+src/main/resources/application-oracle.yml
+src/main/resources/application-deploy.yml
+src/main/resources/application-prod.yml
+src/main/resources/application-production.yml
+src/main/resources/application-secret.yml
 
-# 예시 파일은 GitHub에 포함
+# Safe configuration templates
 !src/main/resources/application-private.yml.example
 !src/main/resources/application-aws.yml.example
+!src/main/resources/application-oracle.yml.example
+!src/main/resources/application-deploy.yml.example
+
+# Keys, certificates, and credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.csr
+id_rsa
+id_ed25519
+credentials.json
+service-account*.json
+secrets/
+certbot/
+letsencrypt/
+
+# Local Docker overrides may contain passwords
+compose.override.yml
+compose.override.yaml
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
