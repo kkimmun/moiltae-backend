@@ -24,14 +24,15 @@ uploads/
 !.env.example
 !.env.*.example
 
-# Spring configuration containing private values
-src/main/resources/application-private.yml
-src/main/resources/application-aws.yml
-src/main/resources/application-oracle.yml
-src/main/resources/application-deploy.yml
-src/main/resources/application-prod.yml
-src/main/resources/application-production.yml
-src/main/resources/application-secret.yml
+# YAML files stay local
+*.yml
+*.yaml
+
+# GitHub Actions requires a YAML workflow file
+!.github/
+!.github/workflows/
+!.github/workflows/*.yml
+!.github/workflows/*.yaml
 
 # Safe configuration templates
 !src/main/resources/application-private.yml.example
@@ -54,12 +55,6 @@ service-account*.json
 secrets/
 certbot/
 letsencrypt/
-
-# Local Docker overrides may contain passwords
-compose.override.yml
-compose.override.yaml
-docker-compose.override.yml
-docker-compose.override.yaml
 
 # Operating system files
 .DS_Store

@@ -1,9 +1,0 @@
-spring:
-  config:
-    activate:
-      on-profile: local
-  datasource:
-    url: ${LOCAL_DB_URL:jdbc:h2:file:./data/moiltae;MODE=MySQL;AUTO_SERVER=TRUE}
-    username: ${LOCAL_DB_USERNAME:sa}
-    password: ${LOCAL_DB_PASSWORD:}
-    driver-class-name: org.h2.Driver
